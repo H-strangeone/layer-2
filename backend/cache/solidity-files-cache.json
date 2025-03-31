@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "C:\\Users\\sanje\\Documents\\layer-2\\backend\\contracts\\Layer2Scaling.sol": {
-      "lastModificationDate": 1743454120938,
-      "contentHash": "a508e817c736075f9180bfd9b03ae45b",
+      "lastModificationDate": 1743454737504,
+      "contentHash": "ba7a7a18ded216ba9bb4ab709a1ec8ee",
       "sourceName": "contracts/Layer2Scaling.sol",
       "solcConfig": {
         "version": "0.8.20",
