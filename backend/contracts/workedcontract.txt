@@ -13,7 +13,7 @@ contract Layer2Scaling {
     mapping(uint256 => Batch) public batches;
     uint256 public nextBatchId;
     mapping(address => uint256) public balances;
-    uint256 public slashingPenalty = 0.05 ether;
+    uint256 public slashingPenalty = 0.05 ether; // 5% penalty
 
     event BatchSubmitted(uint256 indexed batchId, bytes32 transactionsRoot);
     event BatchVerified(uint256 indexed batchId);
@@ -22,11 +22,6 @@ contract Layer2Scaling {
     event FundsWithdrawn(address indexed user, uint256 amount);
     event FraudPenaltyApplied(address indexed user, uint256 penalty);
     event BatchFinalized(uint256 indexed batchId);
-
-    modifier batchExists(uint256 _batchId) {
-        require(batches[_batchId].batchId != 0, "Batch does not exist");
-        _;
-    }
 
     constructor() {
         nextBatchId = 1;
@@ -38,7 +33,8 @@ contract Layer2Scaling {
         nextBatchId++;
     }
 
-    function verifyBatch(uint256 _batchId) external batchExists(_batchId) {
+    function verifyBatch(uint256 _batchId) external {
+        require(batches[_batchId].batchId != 0, "Batch does not exist");
         require(!batches[_batchId].finalized, "Batch is finalized");
         require(!batches[_batchId].verified, "Batch already verified");
 
@@ -46,14 +42,17 @@ contract Layer2Scaling {
         emit BatchVerified(_batchId);
     }
 
-    function reportFraud(uint256 _batchId, bytes32 _fraudProof) external batchExists(_batchId) {
+    function reportFraud(uint256 _batchId, bytes32 _fraudProof) external {
+        require(batches[_batchId].batchId != 0, "Batch does not exist");
         require(!batches[_batchId].verified, "Cannot report fraud on a verified batch");
         require(!batches[_batchId].finalized, "Cannot report fraud on a finalized batch");
 
-        bool fraudFound = detectFraud(_fraudProof);
+        bool fraudFound = false;
 
         if (!fraudFound) {
-            require(balances[msg.sender] >= slashingPenalty, "Insufficient balance for penalty");
+            uint256 userBalance = balances[msg.sender];
+            require(userBalance >= slashingPenalty, "Insufficient balance for penalty");
+
             balances[msg.sender] -= slashingPenalty;
             emit FraudPenaltyApplied(msg.sender, slashingPenalty);
         }
@@ -61,11 +60,8 @@ contract Layer2Scaling {
         emit FraudReported(_batchId, _fraudProof);
     }
 
-    function detectFraud(bytes32 _fraudProof) internal pure returns (bool) {
-        return false;
-    }
-
-    function finalizeBatch(uint256 _batchId) external batchExists(_batchId) {
+    function finalizeBatch(uint256 _batchId) external {
+        require(batches[_batchId].batchId != 0, "Batch does not exist");
         require(!batches[_batchId].finalized, "Batch already finalized");
         require(block.timestamp > batches[_batchId].timestamp + 1 weeks, "Batch time window not over");
 
@@ -80,11 +76,9 @@ contract Layer2Scaling {
     }
 
     function withdrawFunds(uint256 _amount) external {
-        uint256 userBalance = balances[msg.sender];
-        require(userBalance >= _amount, "Insufficient balance");
-        balances[msg.sender] = userBalance - _amount;
-        (bool success, ) = payable(msg.sender).call{value: _amount}("");
-        require(success, "Transfer failed");
+        require(balances[msg.sender] >= _amount, "Insufficient balance");
+        balances[msg.sender] -= _amount;
+        payable(msg.sender).transfer(_amount);
         emit FundsWithdrawn(msg.sender, _amount);
     }
 
