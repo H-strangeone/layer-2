@@ -13,7 +13,7 @@ contract Layer2Scaling {
     mapping(uint256 => Batch) public batches;
     uint256 public nextBatchId;
     mapping(address => uint256) public balances;
-    uint256 public slashingPenalty = 0.05 ether; // 5% penalty
+    uint256 public slashingPenalty = 0.05 ether;  // 5% penalty
 
     event BatchSubmitted(uint256 indexed batchId, bytes32 transactionsRoot);
     event BatchVerified(uint256 indexed batchId);
@@ -21,7 +21,6 @@ contract Layer2Scaling {
     event FundsDeposited(address indexed user, uint256 amount);
     event FundsWithdrawn(address indexed user, uint256 amount);
     event FraudPenaltyApplied(address indexed user, uint256 penalty);
-    event BatchFinalized(uint256 indexed batchId);
 
     constructor() {
         nextBatchId = 1;
@@ -47,12 +46,10 @@ contract Layer2Scaling {
         require(!batches[_batchId].verified, "Cannot report fraud on a verified batch");
         require(!batches[_batchId].finalized, "Cannot report fraud on a finalized batch");
 
-        bool fraudFound = false;
+        bool fraudFound = false; // Assume fraud is false for now
 
         if (!fraudFound) {
-            uint256 userBalance = balances[msg.sender];
-            require(userBalance >= slashingPenalty, "Insufficient balance for penalty");
-
+            require(balances[msg.sender] >= slashingPenalty, "Insufficient balance for penalty"); // 🛠️ Ensure enough balance
             balances[msg.sender] -= slashingPenalty;
             emit FraudPenaltyApplied(msg.sender, slashingPenalty);
         }
@@ -60,13 +57,17 @@ contract Layer2Scaling {
         emit FraudReported(_batchId, _fraudProof);
     }
 
+
+
+    event BatchFinalized(uint256 indexed batchId);
+
     function finalizeBatch(uint256 _batchId) external {
         require(batches[_batchId].batchId != 0, "Batch does not exist");
         require(!batches[_batchId].finalized, "Batch already finalized");
         require(block.timestamp > batches[_batchId].timestamp + 1 weeks, "Batch time window not over");
 
         batches[_batchId].finalized = true;
-        emit BatchFinalized(_batchId);
+        emit BatchFinalized(_batchId);  // ✅ Emit the event
     }
 
     function depositFunds() external payable {
@@ -81,8 +82,7 @@ contract Layer2Scaling {
         payable(msg.sender).transfer(_amount);
         emit FundsWithdrawn(msg.sender, _amount);
     }
-
     receive() external payable {
         emit FundsDeposited(msg.sender, msg.value);
     }
-}
+} 
