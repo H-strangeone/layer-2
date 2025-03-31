@@ -40,6 +40,7 @@ export interface Layer2ScalingInterface extends Interface {
 
   getEvent(
     nameOrSignatureOrTopic:
+      | "BatchFinalized"
       | "BatchSubmitted"
       | "BatchVerified"
       | "FraudPenaltyApplied"
@@ -123,6 +124,18 @@ export interface Layer2ScalingInterface extends Interface {
     functionFragment: "withdrawFunds",
     data: BytesLike
   ): Result;
+}
+
+export namespace BatchFinalizedEvent {
+  export type InputTuple = [batchId: BigNumberish];
+  export type OutputTuple = [batchId: bigint];
+  export interface OutputObject {
+    batchId: bigint;
+  }
+  export type Event = TypedContractEvent<InputTuple, OutputTuple, OutputObject>;
+  export type Filter = TypedDeferredTopicFilter<Event>;
+  export type Log = TypedEventLog<Event>;
+  export type LogDescription = TypedLogDescription<Event>;
 }
 
 export namespace BatchSubmittedEvent {
@@ -349,6 +362,13 @@ export interface Layer2Scaling extends BaseContract {
   ): TypedContractMethod<[_amount: BigNumberish], [void], "nonpayable">;
 
   getEvent(
+    key: "BatchFinalized"
+  ): TypedContractEvent<
+    BatchFinalizedEvent.InputTuple,
+    BatchFinalizedEvent.OutputTuple,
+    BatchFinalizedEvent.OutputObject
+  >;
+  getEvent(
     key: "BatchSubmitted"
   ): TypedContractEvent<
     BatchSubmittedEvent.InputTuple,
@@ -392,6 +412,17 @@ export interface Layer2Scaling extends BaseContract {
   >;
 
   filters: {
+    "BatchFinalized(uint256)": TypedContractEvent<
+      BatchFinalizedEvent.InputTuple,
+      BatchFinalizedEvent.OutputTuple,
+      BatchFinalizedEvent.OutputObject
+    >;
+    BatchFinalized: TypedContractEvent<
+      BatchFinalizedEvent.InputTuple,
+      BatchFinalizedEvent.OutputTuple,
+      BatchFinalizedEvent.OutputObject
+    >;
+
     "BatchSubmitted(uint256,bytes32)": TypedContractEvent<
       BatchSubmittedEvent.InputTuple,
       BatchSubmittedEvent.OutputTuple,

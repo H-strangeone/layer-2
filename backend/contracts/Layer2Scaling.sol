@@ -46,16 +46,20 @@ contract Layer2Scaling {
         require(!batches[_batchId].verified, "Cannot report fraud on a verified batch");
         require(!batches[_batchId].finalized, "Cannot report fraud on a finalized batch");
 
-        // Apply slashing penalty if fraud is found to be false
-        bool fraudFound = false;  // This can be checked through an off-chain process or oracle, but for now we assume false
+        bool fraudFound = false; // Assume fraud is false for now
+
         if (!fraudFound) {
-            // Apply a slashing penalty to the reporter
-            uint256 penalty = slashingPenalty;
-            balances[msg.sender] -= penalty;
-            emit FraudPenaltyApplied(msg.sender, penalty);
+            require(balances[msg.sender] >= slashingPenalty, "Insufficient balance for penalty"); // 🛠️ Ensure enough balance
+            balances[msg.sender] -= slashingPenalty;
+            emit FraudPenaltyApplied(msg.sender, slashingPenalty);
         }
+
         emit FraudReported(_batchId, _fraudProof);
     }
+
+
+
+    event BatchFinalized(uint256 indexed batchId);
 
     function finalizeBatch(uint256 _batchId) external {
         require(batches[_batchId].batchId != 0, "Batch does not exist");
@@ -63,6 +67,7 @@ contract Layer2Scaling {
         require(block.timestamp > batches[_batchId].timestamp + 1 weeks, "Batch time window not over");
 
         batches[_batchId].finalized = true;
+        emit BatchFinalized(_batchId);  // ✅ Emit the event
     }
 
     function depositFunds() external payable {
@@ -77,4 +82,8 @@ contract Layer2Scaling {
         payable(msg.sender).transfer(_amount);
         emit FundsWithdrawn(msg.sender, _amount);
     }
+    receive() external payable {
+        emit FundsDeposited(msg.sender, msg.value);
+    }
+
 } 
