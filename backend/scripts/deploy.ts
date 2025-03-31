@@ -1,13 +1,18 @@
-const hre = require("hardhat");
+import { ethers } from "hardhat";
 
-async function main() {
-  const Layer2 = await hre.ethers.getContractFactory("Layer2");
-  const layer2 = await Layer2.deploy();
-  await layer2.deployed();
-  console.log("Layer2 deployed to:", layer2.address);
+async function main(): Promise<void> {
+  // Ensure the name exactly matches the Solidity contract name
+  const Layer2Scaling = await ethers.getContractFactory("Layer2Scaling");
+  const layer2Scaling = await Layer2Scaling.deploy();
+  await layer2Scaling.waitForDeployment();
+
+  const contractAddress = await layer2Scaling.getAddress();
+  console.log(`Layer2Scaling contract deployed at: ${contractAddress}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
