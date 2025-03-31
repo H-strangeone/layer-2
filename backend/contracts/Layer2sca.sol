@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+//import { ethers } from "hardhat";
 
 async function main(): Promise<void> {
   // Ensure the name exactly matches the Solidity contract name
