@@ -1,14 +1,15 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
+import dotenv from "dotenv";
+import { getContract } from "../../frontend/utils/contract";
 
-async function main() {
-    const provider = new ethers.JsonRpcProvider("https://sepolia.infura.io/v3/2e2fc88fb4bb40669f6c3080abadf66b");
-    const wallet = new ethers.Wallet("215cb5ebfa0a18fc41abde54e7d92ebbce00ee952391e0b6bc0e8304764ec6e7", provider);
+dotenv.config();
 
-    const balance = await provider.getBalance(wallet.address);
-    console.log(`Balance: ${ethers.formatEther(balance)} ETH`);
+const provider = new ethers.providers.JsonRpcProvider(process.env.INFURA_SEPOLIA_URL);
+const contract = getContract(provider);
+
+async function getBalance(address: string) {
+  const balance = await contract.getBalance(address);
+  console.log(`Balance of ${address}:`, ethers.utils.formatEther(balance));
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exit(1);
-});
+getBalance("0xYourWalletAddressHere");

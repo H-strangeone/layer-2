@@ -1,25 +1,32 @@
 "use client";
 import { useState } from "react";
+import axios from "axios";
 
 export default function BatchSubmit() {
-  const [transactions, setTransactions] = useState<string[]>([]);
+  const [amount, setAmount] = useState("");
 
-  const addTransaction = () => {
-    const newTx = prompt("Enter recipient address:");
-    if (newTx) setTransactions([...transactions, newTx]);
+  const submitTransaction = async () => {
+    try {
+      await axios.post("http://localhost:5500/deposit", { amount });
+      alert("Deposit successful!");
+    } catch (error) {
+      console.error("Error submitting transaction:", error);
+    }
   };
 
   return (
-    <div className="p-6 bg-gray-800 text-white rounded-md">
-      <h2 className="text-lg font-bold">Batch Transactions</h2>
-      <button onClick={addTransaction} className="bg-green-500 px-4 py-2 mt-2">
-        Add Transaction
+    <div className="p-6 bg-gray-800 text-white rounded-lg">
+      <h2 className="text-xl font-bold">Batch Transactions</h2>
+      <input
+        type="number"
+        placeholder="Amount (ETH)"
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        className="border p-2 mt-2"
+      />
+      <button onClick={submitTransaction} className="btn-primary mt-2">
+        Submit
       </button>
-      <ul className="mt-4">
-        {transactions.map((tx, index) => (
-          <li key={index} className="text-sm">{tx}</li>
-        ))}
-      </ul>
     </div>
   );
 }

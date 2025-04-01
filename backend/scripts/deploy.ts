@@ -1,19 +1,17 @@
 import { ethers } from "hardhat";
+import dotenv from "dotenv";
 
-async function main(): Promise<void> {
-  // Ensure the name exactly matches the Solidity contract name
+dotenv.config();
+
+async function main() {
   const Layer2Scaling = await ethers.getContractFactory("Layer2Scaling");
-  
-  const layer2Scaling = await Layer2Scaling.deploy();
-  await layer2Scaling.waitForDeployment();
+  const contract = await Layer2Scaling.deploy();
+  await contract.deployed();
 
-  const contractAddress = await layer2Scaling.getAddress();
-  console.log(`Layer2Scaling contract deployed at: ${contractAddress}`);
+  console.log(`Contract deployed to: ${contract.address}`);
 }
 
-main()
-  .then(() => process.exit(0))
-  .catch((error) => {
-    console.error(error);
-    process.exit(1);
-  });
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
