@@ -19,6 +19,7 @@
     "ts-node": "^10.9.2"
   },
   "dependencies": {
+    "@metamask/detect-provider": "^2.0.0",
     "abbrev": "^1.0.9",
     "acorn": "^8.14.1",
     "acorn-walk": "^8.3.4",
